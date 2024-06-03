@@ -1,0 +1,9 @@
+gradio
+fastAPI
+uvicorn
+jinja2
+itsdangerous
+greenlet
+gevent
+pycryptodome
+pyexecjs

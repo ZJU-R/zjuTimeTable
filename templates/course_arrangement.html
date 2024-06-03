@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{{ title }}</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background-color: #f9f9f9;
+        margin: 0;
+        padding: 20px;
+      }
+      h1 {
+        text-align: center;
+        color: #333;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 20px 0;
+        background-color: #fff;
+      }
+      th,
+      td {
+        border: 1px solid #ddd;
+        text-align: center;
+        padding: 10px;
+      }
+      th {
+        background-color: #f4f4f4;
+        color: #333;
+      }
+      td {
+        vertical-align: top;
+        position: relative;
+      }
+      .timetable-course {
+        margin-bottom: 10px;
+        padding: 5px;
+        border-radius: 5px;
+        position: relative;
+      }
+      .timetable-not-selected {
+        background-color: #d0dcda;
+      }
+      .timetable-course-name {
+        font-weight: bold;
+      }
+      .timetable-course-info {
+        color: #666;
+      }
+      .timetable-tabs {
+        display: flex;
+        justify-content: center;
+        margin-top: 20px;
+      }
+      .timetable-tab {
+        margin: 0 5px;
+        padding: 5px 10px;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        cursor: pointer;
+        background-color: #f4f4f4;
+      }
+      .timetable-tab.active {
+        background-color: #d1c4e9;
+      }
+      .timetable-tab-content {
+        display: none;
+      }
+      .timetable-tab-content.active {
+        display: block;
+      }
+    </style>
+    <script>
+      function timetableSwitchTab(day, period, index) {
+        var tabs = document.querySelectorAll(
+          ".timetable-tab-" + day + "-" + period
+        );
+        tabs.forEach(function (tab) {
+          tab.classList.remove("active");
+        });
+        var contents = document.querySelectorAll(
+          ".timetable-content-" + day + "-" + period
+        );
+        contents.forEach(function (content) {
+          content.classList.remove("active");
+        });
+        document
+          .getElementById("timetable-tab-" + day + "-" + period + "-" + index)
+          .classList.add("active");
+        document
+          .getElementById(
+            "timetable-content-" + day + "-" + period + "-" + index
+          )
+          .classList.add("active");
+      }
+    </script>
+  </head>
+  <body>
+    <h1>{{ table_title }}</h1>
+    <p>标注未筛选的说明该时间段存在某一门课未筛选，意会一下。</p>
+    <p>短学期课程（只能看掉没掉）：
+      {% for dxq_course in dxq_courses %}
+      {{ dxq_course }} {% endfor %}
+    </p>
+    <table>
+      <thead>
+        <tr>
+          <th>节/周</th>
+          {% for i in range(1, 8) %}
+          <th>星期{{ i }}</th>
+          {% endfor %}
+        </tr>
+      </thead>
+      <tbody>
+        {% for period in range(1, 14) %}
+        <tr>
+          <td>第{{ period }}节</td>
+          {% for day in range(1, 8) %} {% if no_course_slots[(day, period)] %}
+          <td></td>
+          {% else %} {% for course in courses %} {% if course.start_time ==
+          period and course.day == day %}
+          <td
+            rowspan="{{ course.duration }}"
+            class="timetable-course {% if course.selected == 0 %}timetable-not-selected{% endif %}"
+          >
+            {% if course.has_multiple_kes %}
+            <div class="timetable-tabs">
+              {% for ke in course.kes %}
+              <div
+                id="timetable-tab-{{ day }}-{{ period }}-{{ ke.index }}"
+                class="timetable-tab timetable-tab-{{ day }}-{{ period }} {% if ke.index == 0 %}active{% endif %}"
+                onclick="timetableSwitchTab({{ day }}, {{ period }}, {{ ke.index }})"
+              >
+                {{ ke.kcmc }}
+              </div>
+              {% endfor %}
+            </div>
+            {% endif %} {% for ke in course.kes %}
+            <div
+              id="timetable-content-{{ day }}-{{ period }}-{{ ke.index }}"
+              class="timetable-tab-content timetable-content-{{ day }}-{{ period }} {% if ke.index == 0 %}active{% endif %}"
+            >
+              <div>
+                <div class="timetable-course-name">{{ ke.kcmc }}</div>
+                <div class="timetable-course-info">
+                  {{ ke.rkjs }}<br />{{ ke.jsmc }}<br />{{ ke.sksj }}
+                </div>
+                <div class="timetable-course-info">
+                  {{ ke.period_description }}
+                </div>
+                {% if ke.selected == 0 %}
+                <div class="timetable-course-info">未筛选</div>
+                {% endif %}
+                <div class="timetable-course-info">
+                  {{ '单周' if ke.single_double_week == 'single' else '双周' if
+                  ke.single_double_week == 'double' }}
+                </div>
+              </div>
+            </div>
+            {% endfor %}
+          </td>
+          {% endif %} {% endfor %} {% endif %} {% endfor %}
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </body>
+</html>

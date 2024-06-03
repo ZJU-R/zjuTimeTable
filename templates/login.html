@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f8f9fa;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .container {
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            max-width: 900px;
+            background-color: #fff;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+            padding: 40px;
+        }
+        .info {
+            flex: 1;
+            padding-right: 40px;
+            color: #343a40;
+        }
+        .info h2 {
+            font-weight: bold;
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+        .info p {
+            margin-bottom: 15px;
+            line-height: 1.6;
+        }
+        .divider {
+            border-left: 1px dashed #ccc;
+            height: 100%;
+            margin: 0 20px;
+        }
+        .login-container {
+            flex: 1;
+            max-width: 400px;
+        }
+        .login-container h2 {
+            margin-bottom: 30px;
+            font-weight: bold;
+            color: #343a40;
+            font-size: 24px;
+        }
+        .login-container label {
+            font-weight: bold;
+            color: #343a40;
+        }
+        .login-container input[type="submit"] {
+            padding: 10px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .login-container input[type="submit"]:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="info">
+            <h2>获得您的选课（第三方版）</h2>
+            <p>本系统模拟浙江大学统一身份认证系统的操作来查询并显示课程表，会以灰色显示待筛选项。</p>
+            <p>我们不会以任何形式储存您的账户信息，所有代码均已开源。</p>
+            <p>如果您对系统的安全性有任何疑虑，欢迎自建 Python 环境运行开源代码。</p>
+            <p>代码开源地址：<a href="https://github.com/ZJU-R/zjuTimeTable" target="_blank">Github 链接</a> 欢迎各位大佬提出建议和改进意见，期待您的PR！</p>
+            <p>点击登录后请耐心等待，系统会自动跳转到课程表页面。</p>
+            <br/>
+
+            <strong>本项目不对时效性做出任何保证，一切以教务网为主!!!</strong>
+        </div>
+        <div class="divider"></div>
+        <div class="login-container">
+            <h2>Login</h2>
+            <form action="/login" method="post">
+                <div class="form-group">
+                    <label for="school_number">School Number:</label>
+                    <input type="text" class="form-control" id="school_number" name="school_number" required>
+                </div>
+                <div class="form-group">
+                    <label for="password">Password:</label>
+                    <input type="password" class="form-control" id="password" name="password" required>
+                </div>
+                <div class="form-group">
+                    <label for="year">Year:</label>
+                    <select class="form-control" id="year" name="year" required>
+                        <option value="2024-2025">2024-2025</option>
+                        <option value="2023-2024">2023-2024</option>
+                        <option value="2022-2023">2022-2023</option>
+                        <option value="2021-2022">2021-2022</option>
+                        <!-- Add more years as needed -->
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="semester">Semester:</label>
+                    <select class="form-control" id="semester" name="semester" required>
+                        <option value="1">秋冬</option>
+                        <option value="2">春夏</option>
+                    </select>
+                </div>
+                <input type="submit" class="btn btn-primary btn-block" value="Login">
+            </form>
+        </div>
+    </div>
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>
