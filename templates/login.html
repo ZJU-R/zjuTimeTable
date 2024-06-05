@@ -70,6 +70,58 @@
         .login-container input[type="submit"]:hover {
             background-color: #0056b3;
         }
+        .checkbox-info {
+            display: flex;
+            align-items: center;
+            position: relative;
+        }
+        .checkbox-info input[type="checkbox"] {
+            margin-right: 10px;
+        }
+        .tooltip-icon {
+            margin-left: 5px;
+            color: #007bff;
+            cursor: pointer;
+        }
+        .tooltip-icon:hover .tooltip-text {
+            visibility: visible;
+            opacity: 1;
+        }
+        .tooltip-text {
+            visibility: hidden;
+            width: 200px;
+            background-color: #343a40;
+            color: #fff;
+            text-align: center;
+            border-radius: 5px;
+            padding: 5px;
+            position: absolute;
+            z-index: 1;
+            bottom: 100%; /* Position above the icon */
+            left: 50%;
+            margin-left: -100px; /* Center the tooltip */
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        .tooltip-text::after {
+            content: '';
+            position: absolute;
+            top: 100%; /* Position at the bottom of the tooltip */
+            left: 50%;
+            margin-left: -5px;
+            border-width: 5px;
+            border-style: solid;
+            border-color: #343a40 transparent transparent transparent;
+        }
+        .warning-image {
+            display: none;
+            margin-top: 10px;
+        }
+        .warning-text {
+            display: none;
+            color: red;
+            margin-top: 10px;
+        }
     </style>
 </head>
 <body>
@@ -114,10 +166,32 @@
                         <option value="2">春夏</option>
                     </select>
                 </div>
+                <div class="form-group checkbox-info">
+                    <input type="checkbox" id="also_fetch_zdbk" name="also_fetch_zdbk" onchange="toggleWarning()">
+                    <label for="access_zdbk">是否同时访问zdbk, 用于获得确定已选上的课程</label>
+                </div>
+                <img id="warningImage" class="warning-image" alt="Warning Image" style="width: 100%;"
+              src="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAFA3PEY8MlBGQUZaVVBfeMiCeG5uePWvuZHI////////////////////////////////////////////////////2wBDAVVaWnhpeOuCguv/////////////////////////////////////////////////////////////////////////wAARCAEoAeEDASIAAhEBAxEB/8QAGAABAQEBAQAAAAAAAAAAAAAAAAECAwT/xAAzEAACAgEDAwMEAQIGAgMAAAAAAQIRAxIhMUFRUhNhoSIycYEEM5EjQ1OxwdFCgmJy4f/EABYBAQEBAAAAAAAAAAAAAAAAAAABAv/EABoRAQEBAAMBAAAAAAAAAAAAAAARAQIxQSH/2gAMAwEAAhEDEQA/APYikRQABLXdAUE1LuhqXdCigmpd0NS7oUUE1LuhqXdCigmpd0NS7oUUE1LuhqXdCigmpd0NS7oUUE1LuhqXdCigmpd0NS7oUUE1LuhqXdCigmpd0NS7oUUE1LuhqXdCigmpd0NS7oUUE1LuigAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAnUpOoFAAERSIoEfBNEexXwUQZ0R7DRHsaBJgzoj2GiPY0BMGdEew0R7GgJgzoj2GiPY0BMGdEew0R7GgJgzoj2GiPY0BMGdEew0R7GgJgzoj2GiPY0BMGdEew0R7GgJgzoj2GiPY0BMGdEew0R7GgJgzoj2GiPY0BMGdEexYqtkUnViYKACgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABOpSdQKAAIikRQI+CkfBQAAAAAADnnbWPZ1uc445yimpc+5YlegHlgpzbSk9vcNShNJyb/AGWFeoGck9Ebqzi89prTz7kzCvQDy48jhe1pnSOfVJLTz7iFdgcc1a0nJx2OdPXpjNv3EK9QPNkUsc20+epYSUJUrk3zQhXoByzK6evSc6X+sIV6QeVpV/Vs6/x23F273EK6gAigAAE6spOrAoAAAAAAYyxcoOnuBsHGM5QxJyj7I55MnqJbVRYleoHnjnqKWm69y5MklpcXVoTSu5E0+GcJyyLaUluSMZx3jKKv3LCvSDzPJki0nJfo3ma1JOTiSFdgeVp69MZuRciljnqT5LCvSDzwkoPa5N80dMqtJ69JIV0B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"
+                >
+                <p id="warningText" class="warning-text">当勾选此选项后会强制退出您其它已登录设备的zdbk，效果如图，请知悉后果</p>
                 <input type="submit" class="btn btn-primary btn-block" value="Login">
             </form>
         </div>
     </div>
+    <script>
+        function toggleWarning() {
+            var checkbox = document.getElementById('also_fetch_zdbk');
+            var warningImage = document.getElementById('warningImage');
+            var warningText = document.getElementById('warningText');
+            if (checkbox.checked) {
+                warningImage.style.display = 'block';
+                warningText.style.display = 'block';
+            } else {
+                warningImage.style.display = 'none';
+                warningText.style.display = 'none';
+            }
+        }
+    </script>
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>

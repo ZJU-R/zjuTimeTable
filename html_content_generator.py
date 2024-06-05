@@ -13,9 +13,9 @@ with open(template_file_path, "r", encoding="utf-8") as f:
 template = Template(template_str)
 
 
-def get_course_arrangement_data(school_number: str, password: str, semester: str) -> Tuple[Dict[str, Any], str]:
+def get_course_arrangement_data(school_number: str, password: str, semester: str, also_fetch_zdbk: bool = False) -> Tuple[Dict[str, Any], str, List[str]]:
     
-    ess = etaOperator(school_number, password)
+    ess = etaOperator(school_number, password, also_fetch_zdbk)
     try:
         user_name = ess.get_name()
         if user_name in ["", None]:
@@ -23,11 +23,17 @@ def get_course_arrangement_data(school_number: str, password: str, semester: str
     except:
         raise ValueError("学号或密码错误")
     data = ess.get_course_arrangement(school_number, semester).get("data", {})
+    if also_fetch_zdbk:
+        courses_from_graduation_requirements = ess.get_courses_from_graduation_requirements(school_number)
+        ongoing_course_names = [x.get("KCMC", "") for x in courses_from_graduation_requirements if x.get("status", "") == "在修"]
+    else:
+        ongoing_course_names = []
     title = f"{user_name} 的课程表" if user_name else "课程表"
-    return data, title
+    return data, title, ongoing_course_names
 
-def get_html_content(data, title):
-
+def get_html_content(data: Dict[str, Any], title: str, ongoing_courses: List[str]) -> str:
+    
+    next_semester_courses = []
     # 预处理数据，按照 course 组织
     courses = []
     dxq_courses = [x.get("SJKCMC", "") for x in data.get("sjkc", [])]
@@ -54,6 +60,8 @@ def get_html_content(data, title):
                 ke_info["end_time"] = course_info["start_time"] + course_info["duration"] - 1
                 ke_info["period_description"] = f"{ke_info['start_time']}-{ke_info['end_time']}节"
                 course_info["kes"].append(ke_info)
+                if ke["kcmc"] in ongoing_courses:
+                    next_semester_courses.append(ke["kcmc"])
             courses.append(course_info)
 
     # 冲突检测和合并单周/双周到 all，以及时间包含关系
@@ -111,8 +119,11 @@ def get_html_content(data, title):
         for i in range(course["duration"]):
             no_course_slots[(course["day"], course["start_time"] + i)] = False
 
+    next_semester_courses = list(set(next_semester_courses))
+    if len(next_semester_courses) == 0:
+        next_semester_courses = None
     # Jinja2 模板
     global template
     # 渲染模板
-    html_content = template.render(courses=merged_courses, no_course_slots=no_course_slots, title=title, table_title=title, dxq_courses = dxq_courses)
+    html_content = template.render(courses=merged_courses, no_course_slots=no_course_slots, title=title, table_title=title, dxq_courses = dxq_courses, ongoing_courses = next_semester_courses)
     return html_content

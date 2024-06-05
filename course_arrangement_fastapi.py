@@ -37,9 +37,10 @@ def get_html_content_from_session(request: Request):
     school_number = user_data["school_number"]
     password = user_data["password"]
     semester_full = user_data["semester_full"]
+    also_fetch_zdbk = user_data["also_fetch_zdbk"]
     try:
-        data, title = get_course_arrangement_data(school_number, password, semester_full)
-        html_content = get_html_content(data, title)
+        data, title, ongoing_courses = get_course_arrangement_data(school_number, password, semester_full, also_fetch_zdbk)
+        html_content = get_html_content(data, title, ongoing_courses)
     except Exception as e:
         logging.error(f"Error: {e}")
         return "发生错误：请检查账号与密码、是否在校园内网", "Error"
@@ -50,12 +51,13 @@ async def show_login():
     return login_template
 
 @app.post("/login", response_class=HTMLResponse)
-async def login(school_number: str = Form(...), password: str = Form(...), year: str = Form(...), semester: str = Form(...)):
+async def login(school_number: str = Form(...), password: str = Form(...), year: str = Form(...), semester: str = Form(...), also_fetch_zdbk: bool = Form(False)):
     semester_full = f"{year}-{semester}"
     user_data = {
         "school_number": school_number,
         "password": password,
-        "semester_full": semester_full
+        "semester_full": semester_full,
+        "also_fetch_zdbk": also_fetch_zdbk
     }
     session_token = serializer.dumps(user_data)
     response = RedirectResponse(url="/courses", status_code=302)
@@ -82,4 +84,4 @@ async def show_courses(request: Request):
 #     return test_html_content
 
 if __name__ == "__main__":
-    uvicorn.run(app, host="127.0.0.1", port=7860)
+    uvicorn.run(app, host="127.0.0.1", port=7866)

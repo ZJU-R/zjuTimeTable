@@ -4,12 +4,21 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>{{ title }}</title>
+    <link
+      rel="stylesheet"
+      href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
+    />
     <style>
       body {
         font-family: Arial, sans-serif;
         background-color: #f9f9f9;
         margin: 0;
         padding: 20px;
+        display: flex;
+      }
+      .main-content {
+        flex-grow: 1;
+        margin-right: 20px;
       }
       h1 {
         text-align: center;
@@ -72,6 +81,52 @@
       .timetable-tab-content.active {
         display: block;
       }
+      .sidebar {
+        width: 250px;
+        background-color: #fff;
+        border-left: 1px solid #ddd;
+        padding: 20px;
+        position: relative;
+      }
+      .sidebar h2 {
+        text-align: center;
+        color: #333;
+      }
+      .sidebar table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+      .sidebar th,
+      .sidebar td {
+        border: 1px solid #ddd;
+        text-align: center;
+        padding: 10px;
+      }
+      .sidebar th {
+        background-color: #f4f4f4;
+        color: #333;
+      }
+      .sidebar td {
+        background-color: #fff;
+      }
+      .toggle-button {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 30px;
+        height: 30px;
+        background-color: #ddd;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        cursor: pointer;
+        text-align: center;
+        line-height: 30px;
+        font-size: 16px;
+        z-index: 1000;
+      }
+      .collapsed {
+        display: none;
+      }
     </style>
     <script>
       function timetableSwitchTab(day, period, index) {
@@ -96,77 +151,113 @@
           )
           .classList.add("active");
       }
+
+      function toggleSidebar() {
+        var sidebar = document.querySelector('.sidebar');
+        var button = document.querySelector('.toggle-button');
+        sidebar.classList.toggle('collapsed');
+        button.textContent = sidebar.classList.contains('collapsed') ? '>' : '<';
+      }
     </script>
   </head>
   <body>
-    <h1>{{ table_title }}</h1>
-    <p>标注未筛选的说明该时间段存在某一门课未筛选，意会一下。</p>
-    <p>有的时候课程时间会同时出现例如3-4节、3-5节之类的情况，以教务网为主。</p>
-    <p>短学期课程（只能看掉没掉）：
-      {% for dxq_course in dxq_courses %}
-      {{ dxq_course }} {% endfor %}
-    </p>
-    <table>
-      <thead>
-        <tr>
-          <th>节/周</th>
-          {% for i in range(1, 8) %}
-          <th>星期{{ i }}</th>
-          {% endfor %}
-        </tr>
-      </thead>
-      <tbody>
-        {% for period in range(1, 14) %}
-        <tr>
-          <td>第{{ period }}节</td>
-          {% for day in range(1, 8) %} {% if no_course_slots[(day, period)] %}
-          <td></td>
-          {% else %} {% for course in courses %} {% if course.start_time ==
-          period and course.day == day %}
-          <td
-            rowspan="{{ course.duration }}"
-            class="timetable-course {% if course.selected == 0 %}timetable-not-selected{% endif %}"
-          >
-            {% if course.has_multiple_kes %}
-            <div class="timetable-tabs">
-              {% for ke in course.kes %}
-              <div
-                id="timetable-tab-{{ day }}-{{ period }}-{{ ke.index }}"
-                class="timetable-tab timetable-tab-{{ day }}-{{ period }} {% if ke.index == 0 %}active{% endif %}"
-                onclick="timetableSwitchTab({{ day }}, {{ period }}, {{ ke.index }})"
-              >
-                {{ ke.kcmc }}
-              </div>
-              {% endfor %}
-            </div>
-            {% endif %} {% for ke in course.kes %}
-            <div
-              id="timetable-content-{{ day }}-{{ period }}-{{ ke.index }}"
-              class="timetable-tab-content timetable-content-{{ day }}-{{ period }} {% if ke.index == 0 %}active{% endif %}"
-            >
-              <div>
-                <div class="timetable-course-name">{{ ke.kcmc }}</div>
-                <div class="timetable-course-info">
-                  {{ ke.rkjs }}<br />{{ ke.jsmc }}<br />{{ ke.sksj }}
-                </div>
-                <div class="timetable-course-info">
-                  {{ ke.period_description }}
-                </div>
-                {% if ke.selected == 0 %}
-                <div class="timetable-course-info">未筛选</div>
-                {% endif %}
-                <div class="timetable-course-info">
-                  {{ '单周' if ke.single_double_week == 'single' else '双周' if
-                  ke.single_double_week == 'double' }}
-                </div>
-              </div>
-            </div>
+    <div class="main-content">
+      <h1>{{ table_title }}</h1>
+      <p>标注未筛选的说明该时间段存在某一门课未筛选，意会一下。</p>
+      <p>有的时候课程时间会同时出现例如3-4节、3-5节之类的情况，以教务网为主。</p>
+      <p>短学期课程（只能看掉没掉）：
+        {% for dxq_course in dxq_courses %}
+        {{ dxq_course }} {% endfor %}
+      </p>
+      <table class="table table-bordered">
+        <thead class="thead-light">
+          <tr>
+            <th>节/周</th>
+            {% for i in ["一", "二", "三", "四", "五", "六", "日"] %}
+            <th>星期{{ i }}</th>
             {% endfor %}
-          </td>
-          {% endif %} {% endfor %} {% endif %} {% endfor %}
-        </tr>
-        {% endfor %}
-      </tbody>
-    </table>
+          </tr>
+        </thead>
+        <tbody>
+          {% for period in range(1, 14) %}
+            {% if period == 6 or period == 11 %}
+            <tr>
+              <td colspan="8" style="background-color: #f4f4f4; text-align: center; font-size: smaller;">休息</td>
+            </tr>
+            {% endif %}
+            <tr>
+              <td>第{{ period }}节</td>
+              {% for day in range(1, 8) %} {% if no_course_slots[(day, period)] %}
+              <td></td>
+              {% else %} {% for course in courses %} {% if course.start_time ==
+              period and course.day == day %}
+              <td
+                rowspan="{{ course.duration }}"
+                class="timetable-course {% if course.selected == 0 %}timetable-not-selected{% endif %}"
+              >
+                {% if course.has_multiple_kes %}
+                <div class="timetable-tabs">
+                  {% for ke in course.kes %}
+                  <div
+                    id="timetable-tab-{{ day }}-{{ period }}-{{ ke.index }}"
+                    class="timetable-tab timetable-tab-{{ day }}-{{ period }} {% if ke.index == 0 %}active{% endif %}"
+                    onclick="timetableSwitchTab({{ day }}, {{ period }}, {{ ke.index }})"
+                  >
+                    {{ ke.kcmc }}
+                  </div>
+                  {% endfor %}
+                </div>
+                {% endif %} {% for ke in course.kes %}
+                <div
+                  id="timetable-content-{{ day }}-{{ period }}-{{ ke.index }}"
+                  class="timetable-tab-content timetable-content-{{ day }}-{{ period }} {% if ke.index == 0 %}active{% endif %}"
+                >
+                  <div>
+                    <div class="timetable-course-name">{{ ke.kcmc }}</div>
+                    <div class="timetable-course-info">
+                      {{ ke.rkjs }}<br />{{ ke.jsmc }}<br />{{ ke.sksj }}
+                    </div>
+                    <div class="timetable-course-info">
+                      {{ ke.period_description }}
+                    </div>
+                    {% if ke.selected == 0 %}
+                    <div class="timetable-course-info">未筛选</div>
+                    {% endif %}
+                    <div class="timetable-course-info">
+                      {{ '单周' if ke.single_double_week == 'single' else '双周' if
+                      ke.single_double_week == 'double' }}
+                    </div>
+                  </div>
+                </div>
+                {% endfor %}
+              </td>
+              {% endif %} {% endfor %} {% endif %} {% endfor %}
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    <!-- <div class="toggle-button" onclick="toggleSidebar()"> < </div> -->
+    {% if ongoing_courses %}
+    <div class="sidebar">
+      <h2>确定已选</h2>
+      <table class="table table-bordered">
+        <thead class="thead-light">
+          <tr>
+            <th>课程名称</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for course_name in ongoing_courses %}
+          <tr>
+            <td>{{ course_name }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% endif %} 
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
   </body>
 </html>
